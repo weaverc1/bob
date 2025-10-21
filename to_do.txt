@@ -1,0 +1,142 @@
+AI MOWER CREW - NEXT TASKS TO DO
+===================================
+
+This file tracks the immediate next steps for the project.
+Mark items as [DONE] when completed.
+
+PHASE 1: HARDWARE SPECIFICATION
+--------------------------------
+[ ] Compile complete hardware component list
+    - List all motors with model numbers and specifications
+    - List all sensors with datasheets
+    - Identify motor controllers and interfaces
+    - Document power system components
+    - Specify any additional electronics (relays, voltage regulators, etc.)
+
+[ ] Measure and document robot dimensions
+    - Overall length, width, height (in meters)
+    - Wheelbase (distance between left/right wheels)
+    - Wheel radius and width
+    - Ground clearance
+    - Weight distribution
+    - Center of mass location
+
+[ ] Update hardware_inventory.yaml file
+    - Fill in all sensor specifications
+    - Add motor and actuator details
+    - Complete power system information
+    - Add safety component specifications
+    - Document all interfaces (I2C, UART, PWM, GPIO, etc.)
+
+PHASE 2: GITHUB INTEGRATION
+----------------------------
+[ ] Set up GitHub API access
+    - Create GitHub Personal Access Token
+    - Install PyGithub: pip install PyGithub
+    - Configure authentication in tools/github_search_tool.py
+
+[ ] Enhance GitHub search tool
+    - Implement actual GitHub API calls
+    - Add filtering by stars, maintenance status, ROS2 distro compatibility
+    - Add caching to avoid rate limits
+    - Test search functionality
+
+[ ] Create ROS package discovery workflow
+    - Search for relevant ROS2 Jazzy packages
+    - Evaluate package quality and maintenance
+    - Document selected packages in knowledge_base.md
+
+PHASE 3: CREW EXECUTION & ARCHITECTURE DESIGN
+----------------------------------------------
+[ ] Run initial crew execution
+    - Activate virtual environment: source ~/crewai-env/bin/activate
+    - Navigate to project: cd ~/ai_mower_crew
+    - Run crew: python main.py
+    - Review generated architecture documentation
+
+[ ] Review and validate architecture design
+    - Check system component diagram
+    - Validate recommended ROS2 packages
+    - Ensure alignment with hardware capabilities
+    - Review safety considerations
+
+[ ] Iterate on design based on constraints
+    - Apply "Realist" agent feedback on budget/time
+    - Prioritize MVP features
+    - Identify quick wins
+
+PHASE 4: SIMULATION SETUP
+--------------------------
+[ ] Complete URDF models
+    - Fill in actual robot dimensions
+    - Add sensor mounts based on hardware specs
+    - Calculate and add accurate inertial properties
+    - Test URDF in RViz2: rviz2
+
+[ ] Configure Gazebo plugins
+    - Add differential drive plugin with correct parameters
+    - Configure sensor plugins (Lidar, IMU, Camera)
+    - Set up ros2_control integration
+    - Tune physics parameters for grass simulation
+
+[ ] Test simulation environment
+    - Launch mower in Gazebo
+    - Verify sensor data streams
+    - Test teleoperation controls
+    - Validate odometry output
+
+PHASE 5: INCREMENTAL HARDWARE INTEGRATION
+------------------------------------------
+[ ] Set up Raspberry Pi 5
+    - Install Ubuntu 24.04 for Raspberry Pi
+    - Install ROS2 Jazzy on Pi
+    - Configure network access
+    - Set up remote development environment
+
+[ ] Test components individually (as per Test Specialist plan)
+    - [ ] IMU integration and validation
+    - [ ] Motor controller integration
+    - [ ] Wheel encoder testing
+    - [ ] Lidar sensor testing
+    - [ ] Camera integration
+    - [ ] GPS (if applicable)
+
+[ ] Integration testing
+    - [ ] Differential drive controller with real hardware
+    - [ ] Sensor fusion (wheel odometry + IMU)
+    - [ ] Safety monitoring systems
+    - [ ] Emergency stop functionality
+
+PHASE 6: NAVIGATION DEVELOPMENT
+--------------------------------
+[ ] SLAM testing in simulation
+    - Configure SLAM Toolbox or Cartographer
+    - Create test maps in simulation
+    - Tune SLAM parameters
+
+[ ] Nav2 configuration
+    - Configure planners and controllers
+    - Set up costmaps for grass/lawn environment
+    - Configure recovery behaviors
+    - Test in simulation
+
+[ ] Real-world navigation testing
+    - Create map of test area
+    - Test autonomous navigation
+    - Validate obstacle avoidance
+    - Tune for outdoor conditions
+
+IMMEDIATE PRIORITIES (Do These First!)
+---------------------------------------
+1. [ ] Hardware list - gather all component information
+2. [ ] Robot dimensions - measure physical robot or finalize design
+3. [ ] GitHub integration - enable package discovery
+
+NOTES
+-----
+- Keep this file updated as tasks are completed
+- Add new tasks as they are discovered
+- Prioritize based on Realist agent feedback
+- Focus on incremental testing and validation
+
+Last Updated: [Auto-generated on project creation]

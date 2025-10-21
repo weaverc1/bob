@@ -1,0 +1,167 @@
+architecture_design:
+  description: >
+    Design the complete ROS2 system architecture for the autonomous lawn mower
+  expected_output: >
+    A comprehensive architecture document including:
+    - System component diagram showing all ROS2 nodes and their relationships
+    - Data flow diagram showing topic/service communication patterns
+    - Hardware-software integration points
+    - Sensor fusion strategy
+    - Control loop architecture
+    - Safety layer integration
+    - Recommended ROS2 packages for each component
+    The output should be in Markdown format with mermaid diagrams where appropriate.
+  agent: system_architect
+
+safety_analysis:
+  description: >
+    Identify all safety-critical operations and design fail-safe mechanisms for the autonomous lawn mower
+  expected_output: >
+    A detailed safety analysis document including:
+    - HAZOP (Hazard and Operability) analysis of all operational modes
+    - List of fail-safe mechanisms (emergency stop, blade disable, timeout watchdogs)
+    - Safety-critical sensor redundancy requirements
+    - Recovery behaviors for common failure modes
+    - Recommended safety-rated hardware components
+    - ROS2 safety monitor node specifications
+    Format: Markdown with risk matrices and safety requirement tables.
+  agent: safety_engineer
+
+navigation_stack_selection:
+  description: >
+    Select and configure the optimal SLAM and navigation stack for outdoor lawn mowing operations
+  expected_output: >
+    A navigation stack configuration guide including:
+    - SLAM algorithm selection (e.g., SLAM Toolbox, Cartographer) with justification
+    - Nav2 planner and controller plugin recommendations
+    - Costmap configuration strategy for grass/lawn environments
+    - Recovery behavior configuration
+    - Parameter files for initial tuning
+    - Integration points with localization sensors (GPS, IMU, wheel odometry)
+    Format: Markdown with YAML configuration snippets.
+  agent: navigation_specialist
+
+differential_drive_design:
+  description: >
+    Design a robust differential drive control system that handles traction slippage on grass
+  expected_output: >
+    A differential drive control specification including:
+    - Recommended ros2_control controllers and hardware interfaces
+    - Odometry fusion strategy (wheel encoders + IMU + optional GPS)
+    - Traction slip detection and mitigation approaches
+    - PID tuning guidelines for grass terrain
+    - Transmission configuration for URDF
+    - Test protocols for validating odometry accuracy
+    Format: Markdown with configuration examples and equations.
+  agent: differential_drive_specialist
+
+package_search:
+  description: >
+    Search for and catalog existing ROS2 Jazzy packages relevant to autonomous lawn mowing
+  expected_output: >
+    A curated list of ROS2 packages including:
+    - Differential drive controllers
+    - SLAM implementations
+    - Navigation stacks (Nav2 components)
+    - Sensor drivers (Lidar, IMU, GPS, cameras)
+    - Gazebo plugins for simulation
+    - Safety monitoring tools
+    For each package: name, repository URL, maintenance status, brief description, and recommended use case.
+    Format: Markdown table with links.
+  agent: ros_code_hunter
+
+urdf_design:
+  description: >
+    Design URDF/Xacro models for both the full-size mower and indoor test platform
+  expected_output: >
+    URDF design specifications including:
+    - Base link and joint structure
+    - Wheel and caster configurations
+    - Sensor mounting points and transforms
+    - Inertial properties (mass, inertia tensors)
+    - Collision and visual geometry specifications
+    - Plugin attachment points for Gazebo
+    Provide two designs: outdoor mower and scaled-down indoor testbot.
+    Format: Markdown with Xacro code snippets and link to full files.
+  agent: simulator
+
+gazebo_world_design:
+  description: >
+    Design Gazebo world files for testing lawn mowing scenarios
+  expected_output: >
+    Gazebo world design specifications including:
+    - Outdoor yard world with grass terrain, trees, and obstacles
+    - Indoor test arena with simplified obstacles
+    - Ground plane properties (friction, damping for grass simulation)
+    - Lighting and environmental conditions
+    - Static model placements (fences, flower beds, etc.)
+    Format: Markdown with world file snippets and asset requirements.
+  agent: simulator
+
+component_test_protocol:
+  description: >
+    Create an incremental testing protocol for validating each hardware and software component
+  expected_output: >
+    A testing protocol document including:
+    - Component testing sequence (sensors first, then actuators, then integration)
+    - ROS2 introspection commands for validation (ros2 topic echo, ros2 node info)
+    - Expected output criteria for each component
+    - Test automation scripts using launch_test
+    - Integration testing milestones
+    Format: Markdown with bash commands and Python test script examples.
+  agent: test_specialist
+
+feasibility_review:
+  description: >
+    Review all proposed system components and prioritize based on budget and time constraints
+  expected_output: >
+    A prioritized roadmap including:
+    - Must-have features for MVP (minimum viable product)
+    - Nice-to-have features for future iterations
+    - Estimated time and cost for each component
+    - Quick wins that deliver early value
+    - Components that can be simplified or delayed
+    - Risk assessment for complex components
+    Format: Markdown with priority matrix and Gantt chart recommendations.
+  agent: realist
+
+launch_system_design:
+  description: >
+    Design a modular launch file architecture for the ROS2 system
+  expected_output: >
+    A launch system specification including:
+    - Launch file hierarchy (base system, sensors, navigation, simulation)
+    - Parameter file organization strategy
+    - Namespace conventions
+    - Composable node usage recommendations
+    - Example launch files for common operational modes
+    Format: Markdown with Python launch file examples.
+  agent: ros_infrastructure_builder
+
+controller_integration_plan:
+  description: >
+    Plan the integration of ros2_control with Gazebo simulation and real hardware
+  expected_output: >
+    A controller integration plan including:
+    - ros2_control hardware interface selection
+    - Controller manager configuration
+    - Transmission element specifications for URDF
+    - Gazebo plugin selection (gazebo_ros2_control)
+    - Parameter tuning approach for realistic simulation
+    - Hardware abstraction strategy for sim-to-real transfer
+    Format: Markdown with YAML configuration examples.
+  agent: controller_plugin_integrator
+
+knowledge_base_creation:
+  description: >
+    Compile all relevant documentation, tutorials, and package references into a centralized knowledge base
+  expected_output: >
+    A knowledge base document containing:
+    - Links to all ROS2 packages being used
+    - Relevant ROS2 tutorials and documentation
+    - Hardware datasheets and specifications
+    - Configuration file locations
+    - Troubleshooting guides for common issues
+    - Team decision log (why certain packages/approaches were chosen)
+    Format: Markdown with organized sections and hyperlinks.
+  agent: system_architect

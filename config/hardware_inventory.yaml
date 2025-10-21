@@ -1,0 +1,188 @@
+# Hardware Inventory for AI Mower
+# Updated with actual testbot specifications
+
+# ============================================================================
+# TESTBOT (Indoor Test Platform) - ACTUAL SPECIFICATIONS
+# ============================================================================
+testbot:
+  base_frame: base_link
+  robot_type: differential_drive
+
+  # Actual dimensions from turtlebot.urdf
+  dimensions:
+    length: 0.250  # meters (front to back)
+    width: 0.160   # meters (side to side)
+    height: 0.05   # meters (base body height)
+    wheelbase: 0.135  # meters (distance between left and right wheels - 2*0.0675)
+    wheel_radius: 0.0335  # meters (33.5mm)
+    wheel_width: 0.020    # meters (20mm)
+    caster_radius: 0.015  # meters (15mm)
+    ground_clearance: 0.020  # meters (approximate - from caster)
+
+  # Actual mass properties from URDF
+  mass:
+    total_mass: 1.125  # kg (0.875 base + 0.1*2 wheels + 0.05 caster)
+    base_mass: 0.875   # kg
+    wheel_mass: 0.1    # kg (each)
+    caster_mass: 0.05  # kg
+
+  # Sensors (currently equipped)
+  sensors:
+    - name: imu
+      type: IMU
+      model: TBD  # To be specified
+      mass: 0.01  # kg
+      mount_location: [-0.200, 0, 0.025]  # relative to base_link
+      frame_id: imu_link
+      ros_driver: TBD
+
+    - name: lidar
+      type: 2D Lidar
+      model: TBD  # To be specified
+      mass: 0.1  # kg
+      mount_location: [-0.1, 0, 0.046]  # relative to base_link
+      frame_id: lidar_link
+      dimensions:
+        radius: 0.035  # meters
+        height: 0.04   # meters
+      ros_driver: TBD
+
+# ============================================================================
+# FULL-SIZE MOWER - TO BE SPECIFIED
+# ============================================================================
+mower:
+  base_frame: mower_base_link
+  robot_type: differential_drive
+
+  # Dimensions (in meters) - TO BE FILLED
+  dimensions:
+    length: null  # meters (front to back)
+    width: null   # meters (side to side)
+    height: null  # meters (ground to top)
+    wheelbase: null  # meters (distance between left and right wheels)
+    wheel_radius: null  # meters
+    ground_clearance: null  # meters
+
+  # Mass Properties - TO BE FILLED
+  mass:
+    total_mass: null  # kg
+    payload_capacity: null  # kg
+
+# ============================================================================
+# COMPUTE PLATFORM (Shared between testbot and mower)
+# ============================================================================
+compute_unit:
+  name: Raspberry Pi 5
+  cpu: ARM Cortex-A76 (4-core, 2.4GHz)
+  ram: null  # GB (4GB or 8GB variant - to be specified)
+  os: Ubuntu 24.04
+  ros_version: Jazzy
+
+# Sensors - TO BE FILLED
+# Add your actual sensors here with specifications
+sensors:
+  # Example structure - replace with actual hardware:
+  # - name: rplidar_a2
+  #   type: 2D Lidar
+  #   model: RPLIDAR A2
+  #   interface: USB
+  #   range: 12m
+  #   scan_rate: 10Hz
+  #   ros_driver: sllidar_ros2
+
+  # - name: imu_bno055
+  #   type: IMU
+  #   model: Bosch BNO055
+  #   interface: I2C
+  #   update_rate: 100Hz
+  #   ros_driver: bno055_driver
+
+  # - name: camera_front
+  #   type: RGB Camera
+  #   model: Raspberry Pi Camera Module 3
+  #   interface: CSI
+  #   resolution: 1920x1080
+  #   fps: 30
+  #   ros_driver: v4l2_camera
+
+# Actuators - TO BE FILLED
+actuators:
+  # Example structure:
+  # - name: left_wheel_motor
+  #   type: DC Motor with Encoder
+  #   model: TBD
+  #   interface: PWM + GPIO
+  #   max_rpm: null
+  #   encoder_resolution: null  # ticks per revolution
+
+  # - name: right_wheel_motor
+  #   type: DC Motor with Encoder
+  #   model: TBD
+  #   interface: PWM + GPIO
+  #   max_rpm: null
+  #   encoder_resolution: null
+
+  # - name: blade_motor
+  #   type: Brushless DC Motor
+  #   model: TBD
+  #   interface: ESC + PWM
+  #   max_rpm: null
+  #   safety_interlock: true
+
+# Motor Controllers - TO BE FILLED
+controllers:
+  # Example:
+  # - name: motor_driver
+  #   type: Motor Driver Board
+  #   model: TBD
+  #   max_current: null  # Amps per channel
+  #   channels: 2
+  #   interface: I2C or PWM
+
+# Power System - TO BE FILLED
+power:
+  battery:
+    type: null  # e.g., LiPo, Li-Ion
+    voltage: null  # V
+    capacity: null  # Ah
+    cells: null
+  voltage_regulator:
+    output_5v: null  # for Raspberry Pi
+    output_12v: null  # for motors (if needed)
+
+# Safety Components - TO BE FILLED
+safety:
+  emergency_stop:
+    type: null  # e.g., physical button, wireless kill switch
+    interface: null
+  blade_guard:
+    enabled: true
+  bump_sensors:
+    count: null
+    type: null
+  tilt_sensor:
+    enabled: null
+    max_tilt_angle: null  # degrees
+
+# Communication - TO BE FILLED
+communication:
+  wifi:
+    enabled: true
+    standard: null  # e.g., 802.11ac
+  bluetooth:
+    enabled: false
+  remote_control:
+    enabled: null
+    type: null  # e.g., RC receiver, custom controller
+
+# Additional Notes
+notes: |
+  This is a template file. Please fill in the actual hardware specifications
+  in the next phase of development.
+
+  TODO (from to_do.txt):
+  - Complete hardware component list
+  - Add detailed robot dimensions
+  - Specify all sensors with datasheets
+  - Define motor and controller specifications
+  - Document power system details

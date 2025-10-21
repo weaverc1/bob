@@ -1,0 +1,66 @@
+<!--
+  Gazebo Plugin Configuration Template
+  To be populated by Controller & Plugin Integrator agent with specific sensors and controllers
+-->
+
+<!-- Example plugin structure - to be customized -->
+
+<!-- Differential Drive Plugin Example -->
+<!--
+<plugin name="diff_drive_controller" filename="libgazebo_ros_diff_drive.so">
+  <update_rate>50</update_rate>
+  <left_joint>left_wheel_joint</left_joint>
+  <right_joint>right_wheel_joint</right_joint>
+  <wheel_separation>0.5</wheel_separation>
+  <wheel_diameter>0.2</wheel_diameter>
+  <max_wheel_torque>20</max_wheel_torque>
+  <max_wheel_acceleration>1.0</max_wheel_acceleration>
+  <command_topic>cmd_vel</command_topic>
+  <odometry_topic>odom</odometry_topic>
+  <odometry_frame>odom</odometry_frame>
+  <robot_base_frame>base_link</robot_base_frame>
+  <publish_odom>true</publish_odom>
+  <publish_odom_tf>true</publish_odom_tf>
+  <publish_wheel_tf>false</publish_wheel_tf>
+</plugin>
+-->
+
+<!-- IMU Plugin Example -->
+<!--
+<plugin name="imu_plugin" filename="libgazebo_ros_imu_sensor.so">
+  <ros>
+    <namespace>/imu</namespace>
+    <remapping>~/out:=data</remapping>
+  </ros>
+  <update_rate>100</update_rate>
+  <initial_orientation_as_reference>false</initial_orientation_as_reference>
+</plugin>
+-->
+
+<!-- Lidar Plugin Example -->
+<!--
+<plugin name="lidar_plugin" filename="libgazebo_ros_ray_sensor.so">
+  <ros>
+    <namespace>/lidar</namespace>
+    <remapping>~/out:=scan</remapping>
+  </ros>
+  <output_type>sensor_msgs/LaserScan</output_type>
+  <frame_name>lidar_link</frame_name>
+</plugin>
+-->
+
+<!-- Camera Plugin Example -->
+<!--
+<plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+  <camera_name>front_camera</camera_name>
+  <frame_name>camera_link</frame_name>
+  <hack_baseline>0.0</hack_baseline>
+</plugin>
+-->
+
+<!-- ros2_control Plugin -->
+<!--
+<plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+  <parameters>$(find ai_mower_description)/config/ros2_control.yaml</parameters>
+</plugin>
+-->
