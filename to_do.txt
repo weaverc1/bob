@@ -112,12 +112,20 @@ IMMEDIATE NEXT STEPS
      - Test /dev/ttyUSB0 and /dev/ttyUSB1
      - Update udev rules with correct KERNELS mapping
 
-[ ] 3. IMPLEMENT MICRO-ROS ON ESP32 (Architecture Review Recommendation)
-     - Research micro-ROS Arduino library
-     - Replace custom serial protocol plan
-     - Implement ROS2 nodes on ESP32
+[ ] 3. PLAN MICRO-ROS INTEGRATION (AI CREW TASK READY)
+     Command: cd ~/ai_mower_crew && source ~/crewai-env/bin/activate && python plan_microros.py
+     - Differential Drive Specialist will create comprehensive integration plan
+     - Output: output/micro_ros_integration_plan.md
+     - Time: 5-10 minutes (AI planning task)
 
-[ ] 4. CONFIGURE ROBOT_LOCALIZATION EKF
+[ ] 4. IMPLEMENT MICRO-ROS ON ESP32 (After Planning)
+     - Follow integration plan from step 3
+     - Set up micro-ROS build environment
+     - Implement ESP32 firmware with micro-ROS
+     - Test with ROS2 on Raspberry Pi
+     - Time: 2-3 days (implementation)
+
+[ ] 5. CONFIGURE ROBOT_LOCALIZATION EKF
      - Create config/ekf_config.yaml
      - Configure IMU + Encoders + GPS
      - Test in simulation, then hardware
@@ -165,6 +173,7 @@ KEY RESOURCES
 🤖 AI Crew Commands:
   - Deploy BOB: cd ~/ai_mower_crew && python deploy_bob.py
   - Architecture review: cd ~/ai_mower_crew && python review_architecture.py
+  - Plan Micro-ROS integration: cd ~/ai_mower_crew && python plan_microros.py
 
 ====================
 CRITICAL REMINDERS

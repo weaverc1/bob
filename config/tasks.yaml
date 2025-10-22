@@ -213,3 +213,36 @@ system_architecture_review:
     - Architecture decision record (ADR) for key choices made
     Format: Detailed Markdown report with sections for each component and clear recommendations.
   agent: system_architect
+
+micro_ros_esp32_integration:
+  description: >
+    Design a comprehensive Micro-ROS integration plan for ESP32 to replace the custom serial protocol.
+    This is the #1 Quick Win from the architecture review with HIGH impact. The ESP32 currently connects
+    via custom serial @ 115200 baud. Micro-ROS provides standardized ROS2 integration with native message
+    types, reducing development overhead. ESP32 hardware specs in docs/COMPLETE_HARDWARE_SPEC.md:
+    - ESP32-WROOM-32 Arduino board
+    - L298N motor driver (GPIO 25,26,27,33 PWM + direction)
+    - BNO086 IMU on I2C (address 0x4B, 100Hz update rate)
+    - Wheel encoders on GPIO 32,35 (20 pulses/rev, 413 pulses/meter)
+    - Serial connection to Raspberry Pi @ 115200 baud
+    - Differential drive: 250x160mm wheelbase, 67mm wheels
+    Review micro-ROS Arduino library, design ROS2 node architecture on ESP32, define message flow,
+    and create implementation roadmap.
+  expected_output: >
+    A detailed Micro-ROS integration plan containing:
+    - Micro-ROS overview and benefits vs custom serial protocol
+    - ESP32 firmware architecture using micro-ROS Arduino library
+    - ROS2 node design on ESP32 (publishers, subscribers, services)
+    - Message type definitions (cmd_vel subscriber, odom publisher, imu publisher, encoder data)
+    - Hardware interface design (motor control, encoder reading, IMU integration)
+    - Communication protocol and QoS settings
+    - Build environment setup (PlatformIO or Arduino IDE with micro-ROS)
+    - Flash and deployment process to ESP32
+    - Testing strategy (unit tests, integration tests with ROS2 on Raspberry Pi)
+    - Migration plan from custom serial to micro-ROS
+    - Code examples for key components
+    - Estimated effort and timeline (2-3 days as per architecture review)
+    - Dependencies and prerequisites
+    - Troubleshooting guide
+    Format: Comprehensive Markdown document with code snippets, diagrams, and step-by-step instructions.
+  agent: differential_drive_specialist
