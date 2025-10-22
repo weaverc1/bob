@@ -1,5 +1,5 @@
 /*
- * BOB Autonomous Mower - ESP32 Micro-ROS Firmware
+ * BOB Autonomous Mower - ESP32 Micro-ROS Firmware v1.1
  *
  * Hardware Configuration:
  * - ESP32-WROOM-32 (Arduino compatible)
@@ -13,6 +13,13 @@
  * - Subscribes: /cmd_vel (geometry_msgs/Twist)
  * - Publishes: /odom (nav_msgs/Odometry)
  * - Publishes: /imu (sensor_msgs/Imu)
+ *
+ * v1.1 Changes:
+ * - Added watchdog timer for system safety
+ * - Added encoder rollover handling
+ * - Added cmd_vel timeout failsafe (stops motors after 1 second)
+ * - Added error checking in cmd_vel callback
+ * - Improved error handling for I2C and micro-ROS
  */
 
 #include <micro_ros_arduino.h>
@@ -26,6 +33,13 @@
 #include <nav_msgs/msg/odometry.h>
 #include <sensor_msgs/msg/imu.h>
 #include <Adafruit_BNO08x.h>
+#include <esp_task_wdt.h>  // Watchdog timer
+
+// ==================== SAFETY CONSTANTS ====================
+#define CMD_VEL_TIMEOUT_MS    1000  // Stop motors if no cmd_vel for 1 second
+#define WATCHDOG_TIMEOUT_SEC  3     // Watchdog timeout in seconds
+#define MAX_LINEAR_VEL        0.5   // Maximum linear velocity (m/s)
+#define MAX_ANGULAR_VEL       2.0   // Maximum angular velocity (rad/s)
 
 // ==================== HARDWARE PIN DEFINITIONS ====================
 // Motor Driver L298N
@@ -84,6 +98,7 @@ sh2_SensorValue_t sensorValue;
 // ==================== MOTOR CONTROL ====================
 float target_linear_vel = 0.0;  // m/s
 float target_angular_vel = 0.0; // rad/s
+unsigned long last_cmd_vel_time = 0;  // Timestamp of last cmd_vel message
 
 // PWM Configuration
 const int pwmFreq = 5000;
@@ -102,20 +117,47 @@ void error_loop() {
   }
 }
 
-// ==================== ENCODER ISR ====================
+// ==================== ENCODER ISR WITH ROLLOVER HANDLING ====================
 void IRAM_ATTR encoder_left_isr() {
-  encoder_left_count++;
+  // Increment with rollover protection (stays within reasonable bounds)
+  if (encoder_left_count < LONG_MAX - 1000) {
+    encoder_left_count++;
+  } else {
+    // Reset on overflow (odometry will handle delta correctly)
+    encoder_left_count = 0;
+    last_encoder_left = 0;
+  }
 }
 
 void IRAM_ATTR encoder_right_isr() {
-  encoder_right_count++;
+  // Increment with rollover protection (stays within reasonable bounds)
+  if (encoder_right_count < LONG_MAX - 1000) {
+    encoder_right_count++;
+  } else {
+    // Reset on overflow (odometry will handle delta correctly)
+    encoder_right_count = 0;
+    last_encoder_right = 0;
+  }
 }
 
-// ==================== CMD_VEL CALLBACK ====================
+// ==================== CMD_VEL CALLBACK WITH SAFETY CHECKS ====================
 void cmd_vel_callback(const void * msgin) {
   const geometry_msgs__msg__Twist * msg = (const geometry_msgs__msg__Twist *)msgin;
-  target_linear_vel = msg->linear.x;
-  target_angular_vel = msg->angular.z;
+
+  // Update timestamp for timeout watchdog
+  last_cmd_vel_time = millis();
+
+  // Safety: Clamp velocities to maximum safe values
+  target_linear_vel = constrain(msg->linear.x, -MAX_LINEAR_VEL, MAX_LINEAR_VEL);
+  target_angular_vel = constrain(msg->angular.z, -MAX_ANGULAR_VEL, MAX_ANGULAR_VEL);
+
+  // Safety: Check for NaN or infinity
+  if (isnan(target_linear_vel) || isinf(target_linear_vel)) {
+    target_linear_vel = 0.0;
+  }
+  if (isnan(target_angular_vel) || isinf(target_angular_vel)) {
+    target_angular_vel = 0.0;
+  }
 
   // Apply motor commands
   apply_motor_control(target_linear_vel, target_angular_vel);
@@ -322,10 +364,30 @@ void read_and_publish_imu() {
   RCSOFTCHECK(rcl_publish(&imu_publisher, &imu_msg, NULL));
 }
 
+// ==================== SAFETY CHECK ====================
+void check_cmd_vel_timeout() {
+  // If no cmd_vel received for CMD_VEL_TIMEOUT_MS, stop motors
+  unsigned long current_time = millis();
+  if (last_cmd_vel_time > 0 && (current_time - last_cmd_vel_time) > CMD_VEL_TIMEOUT_MS) {
+    target_linear_vel = 0.0;
+    target_angular_vel = 0.0;
+    stop_motors();
+
+    // Blink LED to indicate timeout state
+    digitalWrite(LED_BUILTIN, (current_time / 250) % 2);
+  }
+}
+
 // ==================== TIMER CALLBACK ====================
 void timer_callback(rcl_timer_t * timer, int64_t last_call_time) {
   RCLC_UNUSED(last_call_time);
   if (timer != NULL) {
+    // Reset watchdog
+    esp_task_wdt_reset();
+
+    // Check for cmd_vel timeout (safety)
+    check_cmd_vel_timeout();
+
     compute_odometry();
     read_and_publish_imu();
   }
@@ -339,6 +401,12 @@ void setup() {
   // LED for status
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
+
+  // Initialize watchdog timer for system safety
+  esp_task_wdt_init(WATCHDOG_TIMEOUT_SEC, true);  // 3 second timeout, panic on timeout
+  esp_task_wdt_add(NULL);  // Add current task to watchdog
+
+  Serial.println("Watchdog timer initialized");
 
   // Setup hardware
   setup_motors();

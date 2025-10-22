@@ -218,6 +218,12 @@ class AiMowerCrew:
             config=self.tasks_config['micro_ros_esp32_integration'],
         )
 
+    @task
+    def esp32_firmware_review(self) -> Task:
+        return Task(
+            config=self.tasks_config['esp32_firmware_review'],
+        )
+
     # ==================== CREW ====================
 
     @crew

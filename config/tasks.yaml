@@ -246,3 +246,41 @@ micro_ros_esp32_integration:
     - Troubleshooting guide
     Format: Comprehensive Markdown document with code snippets, diagrams, and step-by-step instructions.
   agent: differential_drive_specialist
+
+esp32_firmware_review:
+  description: >
+    Conduct a comprehensive technical review of the ESP32 micro-ROS firmware implementation.
+    Review the firmware code at firmware/bob_microros_esp32/bob_microros_esp32.ino against
+    the integration plan at output/micro_ros_integration_plan.md and hardware specifications
+    in docs/COMPLETE_HARDWARE_SPEC.md. This is a critical code review to ensure the firmware
+    is production-ready, follows best practices, and correctly implements:
+    - Micro-ROS integration (publishers, subscribers, executor)
+    - Motor control for L298N driver (PWM + direction control)
+    - Encoder reading with interrupts (GPIO 34,35)
+    - BNO086 IMU integration via I2C (address 0x4B, 100Hz)
+    - Odometry computation from encoders (413 pulses/meter)
+    - Differential drive kinematics (250x160mm wheelbase, 67mm wheels)
+    - Error handling and safety considerations
+    - Resource usage (memory, CPU)
+    - ROS2 message correctness
+    Review installation instructions for completeness and accuracy.
+  expected_output: >
+    A detailed firmware code review document containing:
+    - Executive summary (overall assessment, major findings)
+    - Code quality assessment (structure, readability, maintainability)
+    - Micro-ROS implementation review (node setup, publishers/subscribers, executor)
+    - Hardware interface review (pin assignments, PWM configuration, interrupts)
+    - Motor control logic review (kinematics, PWM mapping, direction control)
+    - Encoder implementation review (ISR design, count accuracy, rollover handling)
+    - IMU integration review (I2C communication, sensor configuration, data publishing)
+    - Odometry algorithm review (pose estimation, velocity computation, quaternion math)
+    - Safety and error handling review (watchdogs, failsafes, LED indicators)
+    - Performance analysis (CPU usage, memory footprint, timing constraints)
+    - Message format verification (ROS2 standard compliance)
+    - Installation guide review (accuracy, completeness, user-friendliness)
+    - Bug identification (critical, major, minor issues found)
+    - Improvement recommendations (code optimizations, features, best practices)
+    - Testing recommendations (unit tests, integration tests, edge cases)
+    - Production readiness assessment (go/no-go decision with justification)
+    Format: Detailed Markdown report with code snippets, specific line references, and actionable recommendations.
+  agent: differential_drive_specialist
