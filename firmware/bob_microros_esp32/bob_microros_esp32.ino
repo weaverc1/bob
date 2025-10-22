@@ -1,5 +1,5 @@
 /*
- * BOB Autonomous Mower - ESP32 Micro-ROS Firmware v1.1
+ * BOB Autonomous Mower - ESP32 Micro-ROS Firmware v1.2
  *
  * Hardware Configuration:
  * - ESP32-WROOM-32 (Arduino compatible)
@@ -14,7 +14,15 @@
  * - Publishes: /odom (nav_msgs/Odometry)
  * - Publishes: /imu (sensor_msgs/Imu)
  *
- * v1.1 Changes:
+ * Version History:
+ * v1.2 (2025-10-22):
+ * - Fixed compatibility with ESP32 Arduino Core 3.x
+ * - Added LED_BUILTIN definition for boards without it
+ * - Updated PWM API (ledcAttach vs ledcSetup/ledcAttachPin)
+ * - Updated watchdog API (config struct vs direct parameters)
+ * - Added version detection for backward compatibility
+ *
+ * v1.1 (2025-10-22):
  * - Added watchdog timer for system safety
  * - Added encoder rollover handling
  * - Added cmd_vel timeout failsafe (stops motors after 1 second)
@@ -40,6 +48,11 @@
 #define WATCHDOG_TIMEOUT_SEC  3     // Watchdog timeout in seconds
 #define MAX_LINEAR_VEL        0.5   // Maximum linear velocity (m/s)
 #define MAX_ANGULAR_VEL       2.0   // Maximum angular velocity (rad/s)
+
+// LED Pin (some ESP32 boards don't have LED_BUILTIN defined)
+#ifndef LED_BUILTIN
+#define LED_BUILTIN 2  // GPIO 2 is typically the built-in LED on ESP32
+#endif
 
 // ==================== HARDWARE PIN DEFINITIONS ====================
 // Motor Driver L298N
@@ -165,13 +178,18 @@ void cmd_vel_callback(const void * msgin) {
 
 // ==================== MOTOR CONTROL FUNCTIONS ====================
 void setup_motors() {
-  // Configure PWM channels
-  ledcSetup(pwmChannelLeft, pwmFreq, pwmResolution);
-  ledcSetup(pwmChannelRight, pwmFreq, pwmResolution);
-
-  // Attach channels to GPIO pins
-  ledcAttachPin(MOTOR_LEFT_PWM, pwmChannelLeft);
-  ledcAttachPin(MOTOR_RIGHT_PWM, pwmChannelRight);
+  // Configure PWM channels (ESP32 Arduino 3.x+ uses ledcAttach)
+  #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
+    // ESP32 Arduino 3.x+ API
+    ledcAttach(MOTOR_LEFT_PWM, pwmFreq, pwmResolution);
+    ledcAttach(MOTOR_RIGHT_PWM, pwmFreq, pwmResolution);
+  #else
+    // ESP32 Arduino 2.x API
+    ledcSetup(pwmChannelLeft, pwmFreq, pwmResolution);
+    ledcSetup(pwmChannelRight, pwmFreq, pwmResolution);
+    ledcAttachPin(MOTOR_LEFT_PWM, pwmChannelLeft);
+    ledcAttachPin(MOTOR_RIGHT_PWM, pwmChannelRight);
+  #endif
 
   // Direction pins
   pinMode(MOTOR_LEFT_DIR1, OUTPUT);
@@ -184,8 +202,13 @@ void setup_motors() {
 }
 
 void stop_motors() {
-  ledcWrite(pwmChannelLeft, 0);
-  ledcWrite(pwmChannelRight, 0);
+  #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
+    ledcWrite(MOTOR_LEFT_PWM, 0);
+    ledcWrite(MOTOR_RIGHT_PWM, 0);
+  #else
+    ledcWrite(pwmChannelLeft, 0);
+    ledcWrite(pwmChannelRight, 0);
+  #endif
   digitalWrite(MOTOR_LEFT_DIR1, LOW);
   digitalWrite(MOTOR_LEFT_DIR2, LOW);
   digitalWrite(MOTOR_RIGHT_DIR1, LOW);
@@ -213,7 +236,11 @@ void apply_motor_control(float linear_vel, float angular_vel) {
     digitalWrite(MOTOR_LEFT_DIR1, LOW);
     digitalWrite(MOTOR_LEFT_DIR2, HIGH);
   }
-  ledcWrite(pwmChannelLeft, pwm_left);
+  #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
+    ledcWrite(MOTOR_LEFT_PWM, pwm_left);
+  #else
+    ledcWrite(pwmChannelLeft, pwm_left);
+  #endif
 
   // Right motor
   if (v_right >= 0) {
@@ -223,7 +250,11 @@ void apply_motor_control(float linear_vel, float angular_vel) {
     digitalWrite(MOTOR_RIGHT_DIR1, LOW);
     digitalWrite(MOTOR_RIGHT_DIR2, HIGH);
   }
-  ledcWrite(pwmChannelRight, pwm_right);
+  #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
+    ledcWrite(MOTOR_RIGHT_PWM, pwm_right);
+  #else
+    ledcWrite(pwmChannelRight, pwm_right);
+  #endif
 }
 
 // ==================== ENCODER SETUP ====================
@@ -403,8 +434,20 @@ void setup() {
   digitalWrite(LED_BUILTIN, HIGH);
 
   // Initialize watchdog timer for system safety
-  esp_task_wdt_init(WATCHDOG_TIMEOUT_SEC, true);  // 3 second timeout, panic on timeout
-  esp_task_wdt_add(NULL);  // Add current task to watchdog
+  #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
+    // ESP32 Arduino 3.x+ API uses config struct
+    esp_task_wdt_config_t wdt_config = {
+      .timeout_ms = WATCHDOG_TIMEOUT_SEC * 1000,
+      .idle_core_mask = 0,
+      .trigger_panic = true
+    };
+    esp_task_wdt_init(&wdt_config);
+    esp_task_wdt_add(NULL);
+  #else
+    // ESP32 Arduino 2.x API
+    esp_task_wdt_init(WATCHDOG_TIMEOUT_SEC, true);
+    esp_task_wdt_add(NULL);
+  #endif
 
   Serial.println("Watchdog timer initialized");
 
