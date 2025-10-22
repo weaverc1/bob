@@ -76,9 +76,15 @@ deployment_tasks:
     - Build workspace
 
   6_udev_rules:
-    - Create persistent device names for ESP32 (/dev/ttyESP32)
-    - Create persistent device names for LIDAR (/dev/ttyLIDAR)
-    - Set proper permissions
+    - CRITICAL: Both CP210x devices are identical (same USB ID 10c4:ea60, serial 0001)
+    - MUST use USB physical port location to differentiate
+    - Detected USB ports:
+      * /dev/ttyUSB0 → KERNELS=="1-1.1" (USB port 1.1) - DETERMINE IF ESP32 OR LIDAR
+      * /dev/ttyUSB1 → KERNELS=="1-1.2" (USB port 1.2) - DETERMINE IF ESP32 OR LIDAR
+    - Create udev rules file: /etc/udev/rules.d/99-bob-mower.rules
+    - Rule format: SUBSYSTEM=="tty", KERNELS=="1-1.1", SYMLINK+="ttyESP32", MODE="0666"
+    - Reload udev: sudo udevadm control --reload-rules && sudo udevadm trigger
+    - Add bob to dialout group: sudo usermod -a -G dialout bob
 
   7_esp32_bridge:
     - Create ESP32-ROS2 bridge package

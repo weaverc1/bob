@@ -1,0 +1,32 @@
+# udev rules for BOB Autonomous Mower
+# File: /etc/udev/rules.d/99-bob-mower.rules
+#
+# CRITICAL: Both CP210x devices are identical (USB ID 10c4:ea60, serial 0001)
+# We MUST use physical USB port location (KERNELS) to differentiate them
+#
+# USB Port Mapping (VERIFY WHICH IS WHICH):
+#   /dev/ttyUSB0 → KERNELS=="1-1.1" (USB port 1.1)
+#   /dev/ttyUSB1 → KERNELS=="1-1.2" (USB port 1.2)
+#
+# TODO: Determine which physical port has ESP32 vs LIDAR
+# Test each device to identify:
+#   - ESP32: Serial @ 115200 baud, Arduino firmware
+#   - LIDAR: Serial @ 1000000 baud, SLLIDAR protocol
+#
+# After identification, update the KERNELS values below:
+
+# ESP32 Microcontroller (motor driver, encoders, IMU)
+# Replace KERNELS value with correct USB port (1-1.1 or 1-1.2)
+SUBSYSTEM=="tty", KERNELS=="1-1.1", SYMLINK+="ttyESP32", MODE="0666", GROUP="dialout"
+
+# SLLIDAR A1/A2 (360° 2D LIDAR)
+# Replace KERNELS value with correct USB port (1-1.1 or 1-1.2)
+SUBSYSTEM=="tty", KERNELS=="1-1.2", SYMLINK+="ttyLIDAR", MODE="0666", GROUP="dialout"
+
+# After creating this file:
+# 1. Copy to /etc/udev/rules.d/99-bob-mower.rules
+# 2. Reload rules: sudo udevadm control --reload-rules
+# 3. Trigger: sudo udevadm trigger
+# 4. Add user to dialout: sudo usermod -a -G dialout bob
+# 5. Logout and login (or reboot)
+# 6. Verify: ls -la /dev/ttyESP32 /dev/ttyLIDAR
