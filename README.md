@@ -4,13 +4,35 @@
 
 [![GitHub](https://img.shields.io/badge/github-weaverc1/bob-blue)](https://github.com/weaverc1/bob)
 [![ROS2](https://img.shields.io/badge/ROS2-Jazzy-green)](https://docs.ros.org/en/jazzy/)
-[![Platform](https://img.shields.io/badge/Platform-Raspberry_Pi_5-red)](https://www.raspberrypi.com/)
+[![Platform](https://img.shields.io/badge/Platform-Raspberry_Pi_4-red)](https://www.raspberrypi.com/)
+[![Architecture](https://img.shields.io/badge/Status-Architecture_Reviewed-success)](docs/)
 
 ## Overview
 
-**BOB** (Build-Operate-Build) is an autonomous lawn mower project developed using an AI-driven approach. This project uses CrewAI to orchestrate 10 specialized AI agents that collaborate to design and implement a complete autonomous lawn mowing system. Each agent brings expertise in specific domains such as system architecture, safety, navigation, control systems, simulation, and testing.
+**BOB** (Build-Operate-Build) is an autonomous lawn mower project developed using an AI-driven approach. This project uses CrewAI to orchestrate **11 specialized AI agents** that collaborate to design and implement a complete autonomous lawn mowing system. Each agent brings expertise in specific domains such as system architecture, safety, navigation, control systems, simulation, testing, and remote deployment.
 
 **GitHub Repository:** https://github.com/weaverc1/bob
+
+### 🎯 Current Status (2025-10-21)
+
+✅ **Architecture Reviewed & Validated** - The System Architect has completed a comprehensive review
+✅ **Development Environment Ready** - ROS2 Jazzy, Gazebo simulation, testbot working
+✅ **Hardware Documented** - Complete ESP32-based system specifications
+✅ **Remote Deployment System** - SSH-based deployment to BOB (Raspberry Pi 4) ready
+🔄 **Next:** Deploy ROS2 to BOB and implement Micro-ROS integration
+
+See [Architecture Review](output/architecture_review.md) for detailed findings and recommendations.
+
+### 🏆 Key Architecture Decisions
+
+Based on comprehensive AI crew analysis:
+
+- **✅ Dual-System Setup**: Development machine (simulation) + BOB (hardware)
+- **✅ ROS2 Jazzy**: Chosen for both platforms (Ubuntu 24.04)
+- **✅ Navigation Stack**: Nav2 + SLAM Toolbox + robot_localization
+- **🔄 ESP32 Integration**: Switching from custom serial to **Micro-ROS** (recommended)
+- **✅ Sensor Fusion**: Extended Kalman Filter (EKF) for IMU + encoders + LIDAR + GPS
+- **✅ Safety Standard**: ISO 13849 PL d compliance target
 
 ## System Requirements
 
@@ -51,18 +73,19 @@ ai_mower_crew/
 └── README.md                    # This file
 ```
 
-## The 10 Agents
+## The 11 AI Agents
 
-1. **System Architect** - Designs overall ROS2 system architecture
-2. **Safety Engineer** - Identifies risks and implements fail-safes
-3. **Navigation Specialist** - Configures SLAM and Nav2 stack
-4. **Differential Drive Specialist** - Handles drivetrain and odometry
-5. **ROS Code Hunter** - Finds and adapts existing ROS2 packages
-6. **Simulator** - Creates URDFs and Gazebo environments
+1. **System Architect** - Designs overall ROS2 system architecture, conducts architecture reviews
+2. **Safety Engineer** - Identifies risks, implements fail-safes, ensures ISO 13849 PL d compliance
+3. **Navigation Specialist** - Configures SLAM and Nav2 stack for outdoor autonomous navigation
+4. **Differential Drive Specialist** - Handles drivetrain and odometry with encoder fusion
+5. **ROS Code Hunter** - Finds and adapts existing ROS2 packages from GitHub
+6. **Simulator** - Creates URDFs and Gazebo environments for realistic testing
 7. **Test Specialist** - Designs incremental validation protocols
 8. **The Realist** - Keeps project realistic within budget/time constraints
 9. **ROS Infrastructure Builder** - Manages launch files and configuration
-10. **Controller & Plugin Integrator** - Bridges simulation and hardware
+10. **Controller & Plugin Integrator** - Bridges simulation and hardware via ros2_control
+11. **Remote Deployment Specialist** - Deploys and configures ROS2 on BOB via SSH (NEW!)
 
 ## Installation
 

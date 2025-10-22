@@ -185,3 +185,31 @@ bob_remote_deployment:
     - Next steps for manual verification
     Format: Detailed deployment log in Markdown with command outputs and verification results.
   agent: remote_deployment_specialist
+
+system_architecture_review:
+  description: >
+    Conduct a comprehensive review of the entire BOB autonomous mower system architecture.
+    Review the dual-system setup: Development machine (Ubuntu 24.04, ROS2 Jazzy, Gazebo simulation)
+    and BOB Raspberry Pi 4 (Ubuntu 24.04, ROS2 Jazzy, physical hardware). Evaluate against best
+    practices, budget constraints, and project goals. Review hardware specifications in
+    config/hardware_inventory.yaml and config/bob_config.yaml. Consider ESP32-ROS2 bridge design,
+    sensor integration, navigation stack configuration, and deployment strategy.
+  expected_output: >
+    A comprehensive architecture review document containing:
+    - Executive summary of current architecture
+    - Development machine setup evaluation (strengths, weaknesses, recommendations)
+    - BOB (Raspberry Pi) setup evaluation (resource constraints, performance considerations)
+    - Hardware configuration review (ESP32, BNO086, SLLIDAR, motors, encoders)
+    - ESP32-ROS2 bridge architecture assessment (custom serial vs micro-ROS)
+    - ROS2 package selection validation (Nav2, SLAM Toolbox, robot_localization, ros2-control)
+    - Sensor fusion strategy review (IMU + encoders + LIDAR + GPS)
+    - Navigation stack configuration recommendations
+    - Safety system architecture review (ISO 13849 PL d compliance)
+    - Simulation-to-hardware workflow evaluation
+    - Budget and resource constraint analysis
+    - Best practice compliance assessment
+    - Risk identification and mitigation strategies
+    - Prioritized recommendations (quick wins vs long-term improvements)
+    - Architecture decision record (ADR) for key choices made
+    Format: Detailed Markdown report with sections for each component and clear recommendations.
+  agent: system_architect

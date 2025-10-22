@@ -206,6 +206,12 @@ class AiMowerCrew:
             config=self.tasks_config['bob_remote_deployment'],
         )
 
+    @task
+    def system_architecture_review(self) -> Task:
+        return Task(
+            config=self.tasks_config['system_architecture_review'],
+        )
+
     # ==================== CREW ====================
 
     @crew
