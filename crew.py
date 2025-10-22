@@ -4,10 +4,15 @@ AI Mower Crew - Autonomous Lawn Mower Development Crew
 A CrewAI-based multi-agent system for designing and developing a ROS2-based autonomous lawn mower.
 """
 
-from crewai import Agent, Crew, Process, Task
+from crewai import Agent, Crew, Process, Task, LLM
 from crewai.project import CrewBase, agent, crew, task
 from pathlib import Path
 import yaml
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 @CrewBase
@@ -22,12 +27,20 @@ class AiMowerCrew:
         self.agents_config_path = Path(__file__).parent / self.agents_config
         self.tasks_config_path = Path(__file__).parent / self.tasks_config
 
+        # Configure cost-effective LLM (GPT-4o-mini)
+        self.llm = LLM(
+            model=os.getenv("OPENAI_MODEL_NAME", "gpt-4o-mini"),
+            temperature=0.7,
+            max_tokens=int(os.getenv("MAX_TOKENS", "4000"))
+        )
+
     # ==================== AGENTS ====================
 
     @agent
     def system_architect(self) -> Agent:
         return Agent(
             config=self.agents_config['system_architect'],
+            llm=self.llm,
             verbose=True
         )
 
@@ -35,6 +48,7 @@ class AiMowerCrew:
     def safety_engineer(self) -> Agent:
         return Agent(
             config=self.agents_config['safety_engineer'],
+            llm=self.llm,
             verbose=True
         )
 
@@ -42,6 +56,7 @@ class AiMowerCrew:
     def navigation_specialist(self) -> Agent:
         return Agent(
             config=self.agents_config['navigation_specialist'],
+            llm=self.llm,
             verbose=True
         )
 
@@ -49,6 +64,7 @@ class AiMowerCrew:
     def differential_drive_specialist(self) -> Agent:
         return Agent(
             config=self.agents_config['differential_drive_specialist'],
+            llm=self.llm,
             verbose=True
         )
 
@@ -56,6 +72,7 @@ class AiMowerCrew:
     def ros_code_hunter(self) -> Agent:
         return Agent(
             config=self.agents_config['ros_code_hunter'],
+            llm=self.llm,
             verbose=True
         )
 
@@ -63,6 +80,7 @@ class AiMowerCrew:
     def simulator(self) -> Agent:
         return Agent(
             config=self.agents_config['simulator'],
+            llm=self.llm,
             verbose=True
         )
 
@@ -70,6 +88,7 @@ class AiMowerCrew:
     def test_specialist(self) -> Agent:
         return Agent(
             config=self.agents_config['test_specialist'],
+            llm=self.llm,
             verbose=True
         )
 
@@ -77,6 +96,7 @@ class AiMowerCrew:
     def realist(self) -> Agent:
         return Agent(
             config=self.agents_config['realist'],
+            llm=self.llm,
             verbose=True
         )
 
@@ -84,6 +104,7 @@ class AiMowerCrew:
     def ros_infrastructure_builder(self) -> Agent:
         return Agent(
             config=self.agents_config['ros_infrastructure_builder'],
+            llm=self.llm,
             verbose=True
         )
 
@@ -91,6 +112,17 @@ class AiMowerCrew:
     def controller_plugin_integrator(self) -> Agent:
         return Agent(
             config=self.agents_config['controller_plugin_integrator'],
+            llm=self.llm,
+            verbose=True
+        )
+
+    @agent
+    def remote_deployment_specialist(self) -> Agent:
+        from tools.ssh_tool import ssh_command_tool, ssh_file_transfer_tool
+        return Agent(
+            config=self.agents_config['remote_deployment_specialist'],
+            llm=self.llm,
+            tools=[ssh_command_tool, ssh_file_transfer_tool],
             verbose=True
         )
 
@@ -168,6 +200,12 @@ class AiMowerCrew:
             config=self.tasks_config['knowledge_base_creation'],
         )
 
+    @task
+    def bob_remote_deployment(self) -> Task:
+        return Task(
+            config=self.tasks_config['bob_remote_deployment'],
+        )
+
     # ==================== CREW ====================
 
     @crew
@@ -177,5 +215,6 @@ class AiMowerCrew:
             agents=self.agents,  # Automatically includes all @agent decorated methods
             tasks=self.tasks,    # Automatically includes all @task decorated methods
             process=Process.sequential,  # Tasks will be executed sequentially
+            llm=self.llm,
             verbose=True,
         )

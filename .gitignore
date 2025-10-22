@@ -41,3 +41,5 @@ tmp/
 temp/
 tools/github_config.py
 *.token
+.env
+*.env

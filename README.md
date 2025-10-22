@@ -1,10 +1,16 @@
-# AI Mower Crew
+# BOB - Autonomous Lawn Mower
 
-A multi-agent CrewAI system for designing, developing, and deploying an autonomous lawn mower using ROS2 Jazzy.
+**AI Mower Crew**: A multi-agent CrewAI system for designing, developing, and deploying an autonomous lawn mower using ROS2 Jazzy.
+
+[![GitHub](https://img.shields.io/badge/github-weaverc1/bob-blue)](https://github.com/weaverc1/bob)
+[![ROS2](https://img.shields.io/badge/ROS2-Jazzy-green)](https://docs.ros.org/en/jazzy/)
+[![Platform](https://img.shields.io/badge/Platform-Raspberry_Pi_5-red)](https://www.raspberrypi.com/)
 
 ## Overview
 
-This project uses CrewAI to orchestrate 10 specialized AI agents that collaborate to design and implement a complete autonomous lawn mowing system. Each agent brings expertise in specific domains such as system architecture, safety, navigation, control systems, simulation, and testing.
+**BOB** (Build-Operate-Build) is an autonomous lawn mower project developed using an AI-driven approach. This project uses CrewAI to orchestrate 10 specialized AI agents that collaborate to design and implement a complete autonomous lawn mowing system. Each agent brings expertise in specific domains such as system architecture, safety, navigation, control systems, simulation, and testing.
+
+**GitHub Repository:** https://github.com/weaverc1/bob
 
 ## System Requirements
 

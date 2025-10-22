@@ -1,0 +1,112 @@
+# BOB (Raspberry Pi 4 Model B) Configuration
+# Remote deployment target for autonomous mower
+
+connection:
+  host: "192.168.86.62"
+  username: "bob"
+  password: "bob"
+  ssh_port: 22
+
+system:
+  platform: "Raspberry Pi 4 Model B"
+  os: "Ubuntu 24.04"
+  architecture: "aarch64"
+  ros_distro: "jazzy"
+
+hardware_connected:
+  esp32:
+    connected: true
+    device_path: "/dev/ttyUSB0"  # May need to verify
+    description: "ESP32 microcontroller with motor driver, encoders, and IMU"
+    components:
+      - L298N motor driver
+      - BNO086 IMU (I2C)
+      - Wheel encoders (GPIO 32, 35)
+      - DC motors (left/right)
+
+  sllidar:
+    connected: true
+    device_path: "/dev/ttyUSB1"  # May need to verify
+    model: "SLAMTEC SLLIDAR A1/A2"
+    baudrate: 1000000
+    description: "360° 2D LIDAR for mapping and obstacle detection"
+
+  camera:
+    connected: false
+    model: "Logitech C270"
+    device_path: "/dev/video0"
+    description: "USB webcam (not yet connected)"
+
+  gps:
+    connected: false
+    model: "Generic GPS with PL2303"
+    device_path: "/dev/ttyUSB2"
+    description: "GPS module (not yet integrated)"
+
+deployment_tasks:
+  1_system_check:
+    - Check existing ROS2 installation
+    - Check Ubuntu version
+    - Check available disk space
+    - List connected USB devices
+
+  2_cleanup:
+    - Remove old ROS2 installations if present
+    - Clean up old workspaces
+    - Update system packages
+
+  3_ros2_jazzy_install:
+    - Add ROS2 Jazzy repository
+    - Install ROS2 Jazzy base
+    - Install development tools
+    - Configure environment
+
+  4_install_packages:
+    - navigation2 (Nav2 stack)
+    - slam-toolbox
+    - robot-localization
+    - ros2-control and ros2-controllers
+    - ros-gz (Gazebo)
+    - Additional utilities (rqt, rviz2, etc.)
+
+  5_workspace_setup:
+    - Create /home/bob/bob_ws workspace
+    - Clone/copy testbot_sim package
+    - Set up colcon build environment
+    - Build workspace
+
+  6_udev_rules:
+    - Create persistent device names for ESP32 (/dev/ttyESP32)
+    - Create persistent device names for LIDAR (/dev/ttyLIDAR)
+    - Set proper permissions
+
+  7_esp32_bridge:
+    - Create ESP32-ROS2 bridge package
+    - Set up serial communication (115200 baud)
+    - Configure topics (cmd_vel, odom, imu)
+
+  8_sensor_integration:
+    - Set up SLLIDAR driver (sllidar_ros2)
+    - Configure robot_localization (EKF)
+    - Test sensor data streams
+
+  9_system_configuration:
+    - Configure auto-start (optional)
+    - Set up environment sourcing in .bashrc
+    - Configure network settings
+    - Set up logging
+
+  10_verification:
+    - Test ROS2 installation
+    - Verify all packages installed
+    - Check USB device connections
+    - Test basic sensor data (LIDAR scan, IMU)
+    - Verify workspace builds correctly
+
+notes: |
+  BOB is the physical Raspberry Pi 4 that will be deployed on the autonomous mower.
+  All hardware (ESP32, LIDAR, motors, encoders, IMU) is already connected.
+  The crew will configure the system remotely via SSH.
+
+  Expected setup time: 30-45 minutes
+  Internet connection required for package downloads

@@ -165,3 +165,23 @@ knowledge_base_creation:
     - Team decision log (why certain packages/approaches were chosen)
     Format: Markdown with organized sections and hyperlinks.
   agent: system_architect
+
+bob_remote_deployment:
+  description: >
+    Deploy ROS2 Jazzy and all required packages to BOB (Raspberry Pi 4 at 192.168.86.62) via SSH.
+    Use the SSH tool to remotely configure the system. BOB connection details are in config/bob_config.yaml.
+    All hardware is already connected: ESP32 (motor driver, encoders, IMU), SLLIDAR, motors.
+  expected_output: >
+    A deployment report containing:
+    - System check results (Ubuntu version, existing ROS2, disk space, USB devices)
+    - Cleanup actions performed (old ROS2 removal, workspace cleanup)
+    - ROS2 Jazzy installation status and verification
+    - Package installation status (Nav2, SLAM Toolbox, robot_localization, ros2-control, ros-gz, etc.)
+    - Workspace creation and build status (/home/bob/bob_ws)
+    - udev rules creation for ESP32 (/dev/ttyESP32) and LIDAR (/dev/ttyLIDAR)
+    - USB device detection and mapping
+    - Final system verification (ros2 pkg list, device connections, environment setup)
+    - Any errors encountered and resolutions
+    - Next steps for manual verification
+    Format: Detailed deployment log in Markdown with command outputs and verification results.
+  agent: remote_deployment_specialist
