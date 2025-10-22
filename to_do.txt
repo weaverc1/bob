@@ -112,20 +112,40 @@ IMMEDIATE NEXT STEPS
      - Test /dev/ttyUSB0 and /dev/ttyUSB1
      - Update udev rules with correct KERNELS mapping
 
-[ ] 3. PLAN MICRO-ROS INTEGRATION (AI CREW TASK READY)
-     Command: cd ~/ai_mower_crew && source ~/crewai-env/bin/activate && python plan_microros.py
-     - Differential Drive Specialist will create comprehensive integration plan
-     - Output: output/micro_ros_integration_plan.md
-     - Time: 5-10 minutes (AI planning task)
+[✓] 3. PLAN MICRO-ROS INTEGRATION (COMPLETED)
+     ✓ Differential Drive Specialist created comprehensive integration plan
+     ✓ Output: output/micro_ros_integration_plan.md
+     ✓ Time: 5 minutes (AI planning task)
 
-[ ] 4. IMPLEMENT MICRO-ROS ON ESP32 (After Planning)
-     - Follow integration plan from step 3
-     - Set up micro-ROS build environment
-     - Implement ESP32 firmware with micro-ROS
-     - Test with ROS2 on Raspberry Pi
-     - Time: 2-3 days (implementation)
+[✓] 4. IMPLEMENT MICRO-ROS ESP32 FIRMWARE (COMPLETED)
+     ✓ Complete firmware created: firmware/bob_microros_esp32/bob_microros_esp32.ino
+     ✓ Full installation guide: firmware/INSTALLATION_INSTRUCTIONS.md
+     ✓ Quick start guide: firmware/QUICK_START.md
+     ✓ Features: cmd_vel subscriber, odom publisher, imu publisher, motor control, encoders
+     ✓ Ready to flash via Arduino IDE
 
-[ ] 5. CONFIGURE ROBOT_LOCALIZATION EKF
+[ ] 5. FLASH FIRMWARE TO ESP32 (USER ACTION REQUIRED)
+     Location: firmware/bob_microros_esp32/bob_microros_esp32.ino
+     Guide: firmware/INSTALLATION_INSTRUCTIONS.md
+     Quick: firmware/QUICK_START.md
+     Steps:
+       1. Install Arduino IDE 2.x
+       2. Add ESP32 board support
+       3. Install libraries (micro_ros_arduino, Adafruit_BNO08x)
+       4. Open bob_microros_esp32.ino
+       5. Select board: ESP32 Dev Module
+       6. Connect ESP32 via USB
+       7. Upload (hold BOOT button)
+     Time: 30-45 minutes (first time)
+
+[ ] 6. TEST ESP32 WITH RASPBERRY PI
+     - Connect ESP32 to Raspberry Pi via USB
+     - Run micro-ROS agent: ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/ttyUSB0 -b 115200
+     - Verify topics: ros2 topic list
+     - Test motors: ros2 topic pub /cmd_vel ...
+     - Time: 10-15 minutes
+
+[ ] 7. CONFIGURE ROBOT_LOCALIZATION EKF
      - Create config/ekf_config.yaml
      - Configure IMU + Encoders + GPS
      - Test in simulation, then hardware
