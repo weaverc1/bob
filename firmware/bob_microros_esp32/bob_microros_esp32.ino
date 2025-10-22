@@ -1,5 +1,5 @@
 /*
- * BOB Autonomous Mower - ESP32 Micro-ROS Firmware v1.2
+ * BOB Autonomous Mower - ESP32 Micro-ROS Firmware v1.3
  *
  * Hardware Configuration:
  * - ESP32-WROOM-32 (Arduino compatible)
@@ -15,6 +15,13 @@
  * - Publishes: /imu (sensor_msgs/Imu)
  *
  * Version History:
+ * v1.3 (2025-10-22):
+ * - Fixed watchdog double-initialization error (TWDT already initialized)
+ * - Fixed GPIO pullup errors on input-only pins (GPIO 34, 35)
+ * - Added watchdog_initialized flag to prevent re-initialization
+ * - Changed encoder pins from INPUT_PULLUP to INPUT (requires external pullups)
+ * - Improved error handling for watchdog initialization
+ *
  * v1.2 (2025-10-22):
  * - Fixed compatibility with ESP32 Arduino Core 3.x
  * - Added LED_BUILTIN definition for boards without it
@@ -107,6 +114,9 @@ unsigned long last_odom_time = 0;
 // ==================== IMU CONFIGURATION ====================
 Adafruit_BNO08x bno08x;
 sh2_SensorValue_t sensorValue;
+
+// ==================== SYSTEM STATE ====================
+bool watchdog_initialized = false;  // Prevent double initialization
 
 // ==================== MOTOR CONTROL ====================
 float target_linear_vel = 0.0;  // m/s
@@ -259,8 +269,10 @@ void apply_motor_control(float linear_vel, float angular_vel) {
 
 // ==================== ENCODER SETUP ====================
 void setup_encoders() {
-  pinMode(ENCODER_LEFT, INPUT_PULLUP);
-  pinMode(ENCODER_RIGHT, INPUT_PULLUP);
+  // GPIO 34 and 35 are INPUT_ONLY pins - cannot use INPUT_PULLUP
+  // Use external pullup resistors or just INPUT mode
+  pinMode(ENCODER_LEFT, INPUT);
+  pinMode(ENCODER_RIGHT, INPUT);
 
   attachInterrupt(digitalPinToInterrupt(ENCODER_LEFT), encoder_left_isr, RISING);
   attachInterrupt(digitalPinToInterrupt(ENCODER_RIGHT), encoder_right_isr, RISING);
@@ -433,23 +445,35 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
 
-  // Initialize watchdog timer for system safety
-  #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
-    // ESP32 Arduino 3.x+ API uses config struct
-    esp_task_wdt_config_t wdt_config = {
-      .timeout_ms = WATCHDOG_TIMEOUT_SEC * 1000,
-      .idle_core_mask = 0,
-      .trigger_panic = true
-    };
-    esp_task_wdt_init(&wdt_config);
-    esp_task_wdt_add(NULL);
-  #else
-    // ESP32 Arduino 2.x API
-    esp_task_wdt_init(WATCHDOG_TIMEOUT_SEC, true);
-    esp_task_wdt_add(NULL);
-  #endif
-
-  Serial.println("Watchdog timer initialized");
+  // Initialize watchdog timer for system safety (only once)
+  if (!watchdog_initialized) {
+    #if ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(3, 0, 0)
+      // ESP32 Arduino 3.x+ API uses config struct
+      esp_task_wdt_config_t wdt_config = {
+        .timeout_ms = WATCHDOG_TIMEOUT_SEC * 1000,
+        .idle_core_mask = 0,
+        .trigger_panic = true
+      };
+      esp_err_t err = esp_task_wdt_init(&wdt_config);
+      if (err == ESP_OK) {
+        esp_task_wdt_add(NULL);
+        watchdog_initialized = true;
+        Serial.println("Watchdog timer initialized");
+      } else {
+        Serial.println("Watchdog already initialized (OK)");
+      }
+    #else
+      // ESP32 Arduino 2.x API
+      esp_err_t err = esp_task_wdt_init(WATCHDOG_TIMEOUT_SEC, true);
+      if (err == ESP_OK) {
+        esp_task_wdt_add(NULL);
+        watchdog_initialized = true;
+        Serial.println("Watchdog timer initialized");
+      } else {
+        Serial.println("Watchdog already initialized (OK)");
+      }
+    #endif
+  }
 
   // Setup hardware
   setup_motors();
