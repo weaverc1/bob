@@ -126,6 +126,31 @@ class AiMowerCrew:
             verbose=True
         )
 
+    @agent
+    def esp32_microros_specialist(self) -> Agent:
+        return Agent(
+            config=self.agents_config['esp32_microros_specialist'],
+            llm=self.llm,
+            verbose=True
+        )
+
+    @agent
+    def code_writer(self) -> Agent:
+        return Agent(
+            config=self.agents_config['code_writer'],
+            llm=self.llm,
+            verbose=True
+        )
+    @agent
+    def project_manager(self) -> Agent:
+        return Agent(
+            config=self.agents_config['project_manager'],
+            llm=self.llm,
+            verbose=True
+        )
+
+
+
     # ==================== TASKS ====================
 
     @task
@@ -224,7 +249,36 @@ class AiMowerCrew:
             config=self.tasks_config['esp32_firmware_review'],
         )
 
-    # ==================== CREW ====================
+    @task
+    def esp32_boot_cycling_fix(self) -> Task:
+        return Task(
+            config=self.tasks_config['esp32_boot_cycling_fix'],
+        )
+
+    @task
+    def esp32_vs_pi_architecture_decision(self) -> Task:
+        return Task(
+            config=self.tasks_config['esp32_vs_pi_architecture_decision'],
+        )
+
+    @task
+    def research_ros2_pi_packages(self) -> Task:
+        return Task(
+            config=self.tasks_config['research_ros2_pi_packages'],
+        )
+
+    @task
+    def validate_esp32_to_pi_pinout(self) -> Task:
+        return Task(
+            config=self.tasks_config["validate_esp32_to_pi_pinout"],
+        )
+
+    @task
+    def final_review_and_coordination(self) -> Task:
+        return Task(
+            config=self.tasks_config['final_review_and_coordination'],
+        )
+
 
     @crew
     def crew(self) -> Crew:
@@ -232,7 +286,8 @@ class AiMowerCrew:
         return Crew(
             agents=self.agents,  # Automatically includes all @agent decorated methods
             tasks=self.tasks,    # Automatically includes all @task decorated methods
-            process=Process.sequential,  # Tasks will be executed sequentially
+            process=Process.hierarchical,  # Round-robin style: all agents collaborate on each task
             llm=self.llm,
             verbose=True,
+            manager_llm=self.llm,  # Required for hierarchical process
         )

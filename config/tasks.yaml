@@ -284,3 +284,293 @@ esp32_firmware_review:
     - Production readiness assessment (go/no-go decision with justification)
     Format: Detailed Markdown report with code snippets, specific line references, and actionable recommendations.
   agent: differential_drive_specialist
+
+esp32_boot_cycling_fix:
+  description: >
+    URGENT: Fix ESP32 micro-ROS firmware boot cycling issue. The ESP32 is currently cycling boots
+    every ~4 seconds (delete_client/create_client pattern). Symptoms: garbled bootloader output,
+    continuous reconnection cycle, topics visible but system unstable. Connection: Serial /dev/ttyUSB0
+    @ 115200 baud to Raspberry Pi. Current firmware: v1.3 at firmware/bob_microros_esp32/bob_microros_esp32.ino
+
+    INVESTIGATION PRIORITIES:
+    1. Watchdog timeout (3 sec) vs 4-sec cycle - is watchdog causing resets?
+    2. Timer callback at 100Hz (10ms) - too aggressive for micro-ROS serial transport?
+    3. I2C blocking on BNO086 IMU reads - could block loop() and trigger watchdog
+    4. Memory leaks or stack overflow in micro-ROS
+    5. Micro-ROS executor spin timing issues
+    6. Race conditions in ISRs modifying variables accessed in main loop
+    7. IMU initialization failure causing repeated setup() calls
+
+    REQUIRED FIXES:
+    - Diagnose root cause of boot cycling with specific line numbers
+    - Implement fixes to stabilize the firmware
+    - Adjust watchdog timeout if needed (increase from 3 to 5+ seconds)
+    - Reduce timer frequency if needed (from 100Hz to 20Hz)
+    - Add I2C timeout handling for IMU
+    - Fix any race conditions in encoder ISRs
+    - Ensure proper memory management
+    - Add diagnostic Serial.println statements for debugging
+
+    Write the COMPLETE fixed firmware as a new .ino file with all issues resolved.
+  expected_output: >
+    CRITICAL: You MUST output the COMPLETE, FULL 545+ line firmware .ino file. Do NOT summarize or truncate.
+
+    Your output must be a COMPLETE working Arduino .ino file that includes:
+    - FULL header comment block with version v1.4 and complete changelog
+    - ALL #include statements (micro_ros_arduino.h, rcl, rclc, geometry_msgs, nav_msgs, sensor_msgs, Adafruit_BNO08x, esp_task_wdt.h)
+    - ALL #define constants (safety, pins, robot parameters, micro-ROS config)
+    - ALL global variables (publishers, subscribers, executor, support, node, timer, messages, odometry vars, IMU objects, motor control vars)
+    - ALL function implementations: error_loop(), encoder ISRs, cmd_vel_callback(), setup_motors(), stop_motors(), apply_motor_control(), setup_encoders(), setup_imu(), compute_odometry(), read_and_publish_imu(), check_cmd_vel_timeout(), timer_callback(), setup(), loop()
+    - EVERY SINGLE LINE of the original 545-line firmware with fixes applied
+    - Detailed comments explaining each fix
+    - Diagnostic Serial.println() statements for debugging
+
+    The output format must be:
+    ```cpp
+    [PASTE ENTIRE 545+ LINE FIRMWARE HERE - DO NOT TRUNCATE]
+    ```
+
+    Followed by:
+    ## Summary of Changes in v1.4
+    [List each change with line numbers]
+
+    ## Testing Instructions
+    [How to verify the fix]
+
+    DO NOT provide a summary or partial code. The entire firmware must be included verbatim with fixes applied.
+  agent: code_writer
+
+esp32_vs_pi_architecture_decision:
+  description: >
+    CRITICAL ARCHITECTURE DECISION: Should we continue debugging the ESP32 micro-ROS boot cycling issue,
+    or should we move the motor controller, encoders, and IMU directly to the Raspberry Pi 4?
+
+    CURRENT SITUATION:
+    - ESP32 experiencing boot cycling every ~4 seconds with micro-ROS
+    - Hardware: ESP32-WROOM-32, L298N motor driver, BNO086 IMU, wheel encoders
+    - Connection: Serial /dev/ttyUSB0 @ 115200 baud to Raspberry Pi 4
+    - v1.4 firmware created with fixes (watchdog 5s, timer 50Hz, I2C timeout, race condition fixes)
+    - NOT YET TESTED on hardware
+
+    OPTION 1: Continue with ESP32 + micro-ROS
+    Pros:
+    - Already invested significant effort in firmware development
+    - Offloads real-time motor control from Raspberry Pi
+    - Lower latency for motor control loops
+    - ESP32 handles low-level hardware well
+    - v1.4 firmware may resolve the boot cycling issue
+
+    Cons:
+    - Boot cycling issue may persist despite v1.4 fixes
+    - micro-ROS serial transport @ 115200 may be fundamentally bandwidth-limited
+    - Additional complexity in debugging ESP32 + micro-ROS stack
+    - Serial communication introduces latency
+    - Dependency on micro-ROS agent stability
+
+    OPTION 2: Move everything to Raspberry Pi 4
+    Architecture: Connect L298N, encoders, IMU directly to Raspberry Pi GPIO/I2C
+
+    Pros:
+    - Eliminates ESP32 boot cycling problem entirely
+    - Simplifies architecture (one computer instead of two)
+    - Direct ROS2 nodes on Pi (no micro-ROS translation layer)
+    - Easier debugging (all logs in one place)
+    - Better bandwidth for sensor data
+    - More flexibility for future sensors/actuators
+    - Raspberry Pi 4 has sufficient GPIO pins (40-pin header)
+    - Can use hardware PWM on Pi for motor control
+
+    Cons:
+    - Raspberry Pi is not real-time OS (may have motor control latency issues)
+    - Need to set up GPIO libraries (RPi.GPIO or lgpio)
+    - May need external ADC for analog sensors
+    - Higher power consumption (but Pi is already running)
+    - Raspberry Pi GPIO less robust than ESP32 for industrial environments
+
+    HARDWARE COMPATIBILITY CHECK:
+    - L298N motor driver: Uses PWM + direction pins (Pi has hardware PWM on GPIO 12,13,18,19)
+    - Wheel encoders: Digital inputs (Pi has plenty of GPIO with interrupt support)
+    - BNO086 IMU: I2C interface (Pi has I2C buses on GPIO 2,3)
+    - Power: L298N already has separate 12V power, Pi can control via 3.3V GPIO
+
+    RASPBERRY PI 4 GPIO CAPABILITIES:
+    - 40 GPIO pins (26 available after excluding power/ground/I2C/SPI)
+    - Hardware PWM: GPIO 12, 13, 18, 19 (4 channels) - PERFECT for 2 motors
+    - I2C: GPIO 2 (SDA), 3 (SCL) - for BNO086 IMU
+    - Interrupt support on all GPIO pins for encoders
+    - Voltage: 3.3V logic (L298N inputs are 3.3V tolerant)
+
+    USER'S CONSTRAINTS:
+    - Budget-conscious (avoid unnecessary hardware purchases)
+    - Time-sensitive (need working solution soon)
+    - Already has all hardware (ESP32, Pi, motors, IMU, encoders)
+    - Prioritizes reliability over complexity
+
+    EVALUATE AND RECOMMEND:
+    1. Technical feasibility of both options
+    2. Risk assessment for each approach
+    3. Time-to-working-solution estimate
+    4. Long-term maintainability
+    5. Performance implications
+    6. Clear recommendation with justification
+    7. If recommending Option 2 (Pi), provide GPIO pinout plan
+  expected_output: >
+    A comprehensive architectural decision document containing:
+
+    ## Executive Summary
+    Clear recommendation: Continue with ESP32 OR move to Raspberry Pi, with 2-3 sentence justification
+
+    ## Technical Analysis
+    ### Option 1: ESP32 + micro-ROS (Continue Current Path)
+    - Detailed pros and cons with technical depth
+    - Likelihood v1.4 firmware will resolve boot cycling
+    - Estimated debugging time if issue persists
+    - Risk assessment (LOW/MEDIUM/HIGH)
+
+    ### Option 2: Raspberry Pi Direct Control
+    - Detailed pros and cons with technical depth
+    - GPIO pinout plan for motors, encoders, IMU
+    - Required software libraries (RPi.GPIO, smbus2, etc.)
+    - Real-time performance analysis
+    - Risk assessment (LOW/MEDIUM/HIGH)
+
+    ## Comparative Analysis
+    | Criteria | ESP32 + micro-ROS | Pi Direct | Winner |
+    |----------|-------------------|-----------|--------|
+    | Time to Working Solution | X days | Y days | ? |
+    | Debugging Complexity | ? | ? | ? |
+    | Long-term Reliability | ? | ? | ? |
+    | Performance | ? | ? | ? |
+    | Cost (additional hardware) | ? | ? | ? |
+    | Maintainability | ? | ? | ? |
+
+    ## Risk Assessment
+    - ESP32 path risks and mitigation strategies
+    - Pi path risks and mitigation strategies
+
+    ## Implementation Roadmap
+    For RECOMMENDED option, provide step-by-step plan:
+    1. Hardware connections/changes needed
+    2. Software packages to install
+    3. Code to write/modify
+    4. Testing procedure
+    5. Estimated timeline
+
+    ## Final Recommendation
+    Clear decision with strong justification based on:
+    - Technical feasibility
+    - Time constraints
+    - Budget constraints
+    - Risk profile
+    - User's priority for reliability
+
+    If recommending Pi: Include complete GPIO pinout table
+    If recommending ESP32: Include v1.4 testing plan and fallback strategy
+
+    Format: Professional technical decision document in Markdown
+  agent: system_architect
+research_ros2_pi_packages:
+  description: >
+    RESEARCH MISSION: Find existing ROS2 packages for Raspberry Pi GPIO hardware. We are PIVOTING from ESP32 to Raspberry Pi direct control.
+
+    HARDWARE: L298N motor driver (2 motors), wheel encoders (2), BNO086 IMU (I2C)
+    GOAL: Find maintained ROS2 packages for motor control, encoder odometry, and IMU on Raspberry Pi GPIO
+
+    Search for: Motor control packages (L298N/H-bridge), encoder/odometry packages, BNO08x IMU drivers,
+    integrated differential drive solutions
+
+    Evaluate: ROS2 Jazzy compatibility, maintenance status, documentation quality, ease of integration
+
+    Provide recommendations for each component with installation steps, or suggest custom node development if needed.
+  expected_output: >
+    Research report with:
+    - Motor control package recommendations (or custom approach)
+    - Encoder/odometry package recommendations  
+    - IMU package recommendations
+    - Integration plan with timeline
+    - Clear recommendation: use existing packages OR build custom nodes
+    
+    Format: Markdown with package details, GitHub links, installation commands, configuration examples
+  agent: system_architect
+
+validate_esp32_to_pi_pinout:
+  description: >
+    CRITICAL VALIDATION: Review ESP32 firmware code and create complete pin mapping to Raspberry Pi GPIO.
+    
+    ESP32 CODE PROVIDED: esp32_code_for_review.ino contains actual working firmware with pin definitions.
+    
+    EXTRACT ALL PIN ASSIGNMENTS:
+    From the code identify:
+    - Motor driver pins (PWM, direction control)
+    - Encoder input pins
+    - I2C pins (SDA, SCL)
+    - IMU reset/interrupt pins (if any)
+    - Any other GPIO usage
+    
+    MAP TO RASPBERRY PI:
+    Create validated mapping considering:
+    - Raspberry Pi hardware PWM availability (GPIO 12,13,18,19)
+    - I2C bus GPIO 2,3 (compatible with ESP32 I2C)
+    - Interrupt-capable GPIO for encoders
+    - 3.3V logic compatibility
+    - Avoid conflicts with reserved pins
+    
+    VALIDATE:
+    - All ESP32 pins are accounted for
+    - No Raspberry Pi pin conflicts
+    - Proper function assignments (PWM pins get PWM functions, etc.)
+    - Physical wiring feasibility
+  expected_output: >
+    Complete pin mapping document with:
+    
+    ## ESP32 Pin Inventory
+    Table of ALL pins used with function
+    
+    ## Raspberry Pi Pin Assignment
+    Complete validated GPIO mapping
+    
+    ## Wiring Guide
+    Step-by-step connection instructions
+    
+    ## Validation Checklist
+    Confirmation all pins accounted for
+    
+    Format: Markdown with clear tables
+  agent: system_architect
+  
+plugin_code_generation:
+  description: >
+    Write a Gazebo plugin in C++ to simulate the mower blade. It must:
+    - Include enable/disable functions.
+    - Log simulated blade state.
+    - Include ROS2 publisher to stream blade status.
+
+    Inputs:
+    ROS Version: {ros_distro}
+    Platform: {compute_platform}
+  expected_output: >
+    A C++ file implementing the plugin, and build instructions (CMakeLists.txt and package.xml changes).
+
+  agent: code_writer
+
+
+firmware_comm_protocol:
+  description: >
+    Write C code or pseudocode for micro-ROS firmware that communicates blade status from ESP32 to Pi using a serial protocol.
+    Use simple structs and recommend serialization formats.
+
+  expected_output: >
+    A firmware snippet (or full file) that defines the communication protocol from microcontroller to Raspberry Pi.
+
+  agent: code_writer
+
+
+final_review_and_coordination:
+  description: >
+    Review outputs from all tasks and ensure collaboration has occurred. If work is siloed, highlight what agents need to review whose work.
+    Summarize the overall project progress and recommend next collaboration steps.
+
+  expected_output: >
+    A report showing collaboration paths (who used who's output), gaps, and recommended next steps.
+
+  agent: project_manager
