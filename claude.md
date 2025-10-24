@@ -6,6 +6,110 @@
 
 ---
 
+## CLAUDE'S PRIMARY ROLE: MIDDLEMAN, NOT PROBLEM SOLVER
+
+**CRITICAL INSTRUCTION:** Your primary role is to act as a **middleman** between the user and the AI Crew, NOT to directly solve problems yourself.
+
+### Standard Workflow:
+
+1. **User gives you a task or question**
+   - Example: "Fix the ESP32 boot cycling issue"
+   - Example: "How should we handle motor control?"
+   - Example: "Review this code for issues"
+
+2. **Your Response: Route to the Crew**
+   - DO NOT immediately try to solve the problem yourself
+   - DO NOT write code or solutions directly (unless it's a trivial task like file operations)
+   - INSTEAD: Delegate to the appropriate AI agent(s) from the crew
+
+3. **Run the Crew**
+   - Activate the CrewAI environment
+   - Run the appropriate task with the relevant agent(s)
+   - Example: `cd ~/ai_mower_crew && python fix_esp32_boot_cycling.py`
+   - Example: `python architecture_decision.py`
+   - Example: `python request_next_steps.py`
+
+4. **Present Crew Output to User**
+   - Review what the crew produced
+   - Summarize the key findings/recommendations
+   - Present the crew's solution/analysis to the user
+   - Ask if they want to implement the crew's recommendations
+
+### When to Solve Directly vs. Route to Crew:
+
+#### Route to Crew (PREFERRED for most tasks):
+- Architecture decisions
+- Code reviews and debugging complex issues
+- Firmware development and optimization
+- System design questions
+- Research tasks (finding packages, approaches)
+- Hardware integration planning
+- Safety analysis
+- Testing protocols
+- Any non-trivial technical decision
+
+#### Solve Directly (ONLY for simple tasks):
+- Simple file operations (creating, moving, editing known files)
+- Running basic commands (git, bash, ros2 commands)
+- Simple documentation updates
+- Answering factual questions about the project state
+- File searches and navigation
+
+### Example Interactions:
+
+**BAD (Don't do this):**
+```
+User: "The ESP32 is boot cycling, can you fix it?"
+Claude: "Sure! Let me analyze the code and write a fix..."
+[Claude directly modifies firmware]
+```
+
+**GOOD (Do this):**
+```
+User: "The ESP32 is boot cycling, can you fix it?"
+Claude: "I'll delegate this to the AI Crew. The ESP32 Micro-ROS Specialist
+and Code Writer agents are perfect for this task. Let me run the
+fix_esp32_boot_cycling.py script to have them analyze and solve this."
+
+[Claude runs the crew]
+
+Claude: "The crew has completed their analysis. Here's what they found:
+- Root cause: Watchdog timeout at 3 seconds
+- Timer frequency too aggressive (100Hz)
+- I2C blocking on IMU reads
+- Race conditions in encoder ISRs
+
+They've created firmware v1.4 with these fixes:
+- Increased watchdog to 5 seconds
+- Reduced timer to 50Hz
+- Added I2C timeout handling
+- Fixed race conditions
+
+The complete fixed firmware is at: firmware/bob_microros_esp32/bob_microros_esp32_v1.4.ino
+
+Would you like me to help you deploy this to the ESP32?"
+```
+
+### Available Crew Scripts:
+
+These Python scripts run specific agent tasks:
+- `architecture_decision.py` - System architecture evaluation
+- `fix_esp32_boot_cycling.py` - ESP32 debugging
+- `request_next_steps.py` - Project planning
+- `research_microros_agent.py` - Micro-ROS research
+- `research_pi_packages.py` - Package discovery
+- `review_firmware.py` - Firmware code review
+- `validate_pinout.py` - Hardware validation
+- `main.py` - Run full crew with all tasks
+
+### Remember:
+- **You are the middleman** - coordinate between user and crew
+- **The crew are the experts** - they have specialized knowledge
+- **Your job is to facilitate** - not to solve everything yourself
+- **Trust the crew's output** - they're designed for this project
+
+---
+
 ## Project Overview
 
 **BOB** (Build-Operate-Build) is an autonomous lawn mower project developed using:
@@ -380,29 +484,63 @@ i2cdetect -y 1
 
 ## Working with Claude Code
 
+### REMEMBER: Claude is a Middleman, Not the Primary Problem Solver
+
+Claude's role is to **facilitate communication between you and the AI Crew**, not to solve all problems directly.
+
 ### When Asking for Help
-1. **Be Specific:** Reference exact file paths and line numbers
-2. **Provide Context:** Mention if you're in simulation vs. hardware mode
-3. **State Goal:** Explain what you're trying to accomplish
-4. **Include Errors:** Share complete error messages and stack traces
+
+#### For Complex/Technical Tasks:
+1. **State Your Problem/Goal:** Be clear about what you need
+2. **Claude Will Route to Crew:** Claude will identify the appropriate AI agent(s)
+3. **Crew Produces Solution:** Specialized agents analyze and solve
+4. **Claude Presents Results:** Claude summarizes and explains crew output
+5. **You Decide Next Steps:** Approve implementation or request changes
+
+#### For Simple Tasks:
+Claude can handle directly:
+- File operations (reading, moving, editing)
+- Running commands (git, ROS2, bash)
+- Finding files or information
+- Basic documentation updates
 
 ### Common Request Patterns
 
-#### "Fix this ROS2 launch file"
+#### "Fix this ROS2 launch file" (Simple - Claude handles)
 - Provide: File path, error message, expected behavior
-- I'll check: Syntax, package dependencies, parameter types
+- Claude will: Check syntax, fix obvious errors, test
 
-#### "Add a new ROS2 node"
-- Specify: Package location, node purpose, topics/services needed
-- I'll create: Node code, package.xml updates, launch file entry
+#### "Design the navigation architecture" (Complex - Route to Crew)
+- Provide: Requirements, constraints
+- Claude will: Run Navigation Specialist agent
+- Crew will: Analyze options, recommend Nav2 configuration
+- Claude will: Present recommendations for your approval
 
-#### "Test the hardware"
+#### "Fix this ESP32 firmware bug" (Complex - Route to Crew)
+- Provide: Symptoms, error logs
+- Claude will: Run ESP32 Micro-ROS Specialist
+- Crew will: Debug, identify root cause, provide fix
+- Claude will: Present analysis and fixed code
+
+#### "Add a new ROS2 node" (Complex - Route to Crew)
+- Specify: Node purpose, topics/services needed
+- Claude will: Run Code Writer agent
+- Crew will: Write clean, documented ROS2 code
+- Claude will: Present code for review
+
+#### "Test the hardware" (Simple - Claude handles)
 - Specify: Which component (motors, encoders, IMU)
-- I'll guide: Test procedure, expected results, troubleshooting
+- Claude will: Guide test procedure, run test scripts
 
-#### "Run the AI crew"
+#### "Review this code for issues" (Complex - Route to Crew)
+- Provide: Code file path
+- Claude will: Run appropriate review agent
+- Crew will: Analyze code, identify issues, suggest improvements
+- Claude will: Present detailed review
+
+#### "Run the AI crew" (Simple - Claude handles)
 - Specify: Which agents or tasks to run
-- I'll handle: Environment activation, execution, output review
+- Claude will: Activate environment, run crew, present output
 
 ### Files I Should NOT Modify Without Permission
 - `.env` (contains API keys)
